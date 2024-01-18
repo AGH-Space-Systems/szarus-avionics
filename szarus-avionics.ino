@@ -115,7 +115,9 @@ const char *password = "12345678";  // Password can be between 8 and 64 characte
 ESP8266WebServer server(80);
 void handleRoot() {
   
-  String HTML = "<html><head><meta http-equiv=\"refresh\" content=\"1\"><title>ESP8266 Parachute Deploy</title><style>"
+  String HTML = "<html><head>"
+                // "<meta http-equiv=\"refresh\" content=\"1\">"
+                "<title>ESP8266 Parachute Deploy</title><style>"
                 "body{background-color:#def;font-family:Arial,sans-serif;text-align:center;margin-top:50px;}.button{padding:15px 25px;font-size:24px;text-align:center;cursor:pointer;outline:none;color:#fff;background-color:#008CBA;border:none;border-radius:15px;box-shadow:0 9px #999;}.button:hover{background-color:#0077A7}.button:active{background-color:#0077A7;box-shadow:0 5px #666;transform:translateY(4px);}"
                 "</style></head><body><h1>ESP8266 Parachute Controller</h1>"
                 "<p>Actual Flight Time: " + String(ActualFlightTimer.elapsed() / 1000) + "</p>"
@@ -137,13 +139,30 @@ void handleRoot() {
   server.send(200, "text/html", HTML);
 }
 
-
+void handleAPI(){
+  String JSON = "{"
+                "\"Actual Flight Time\": " + String(ActualFlightTimer.elapsed() / 1000) + ","
+                "\"Avionics Runtime\": " + String(FlightTimer.elapsed() / 1000) + ","
+                "\"Flag Remote Arm\": \"" + String(flag_remote_arm) + "\","
+                "\"Flag Launched\": \"" + String(flag_launched) + "\","
+                "\"Flag Armed\": \"" + String(flag_armed) + "\","
+                "\"Flag Deployed\": \"" + String(flag_deployed) + "\","
+                "\"Acceleration\": " + String(g) + ","
+                "\"Avg Acceleration\": " + String(avg) + ","
+                "\"Prograde Velocity\": " + String(deltav) + ","
+                "\"Signal Strength\": " + String(WiFi.RSSI()) + ","
+                "\"Router IP\": \"192.168.100." + String(WiFi.gatewayIP()[3]) + "\""
+                "}";
+                
+  server.send(200, "application/json", JSON);
+}
 
 
 void handleDeployParachute() {
   digitalWrite(D7, HIGH);  // Set TX GPIO 1 high
   delay(1000);
   digitalWrite(D7, LOW);
+  flag_deployed = 1;
   server.send(200, "text/plain", "Parachute Deployed!");
 }
 
@@ -231,6 +250,7 @@ void setup() {
 
   //IPAddress IP = WiFi.softAPIP();                         // Get the ESP's IP address
   server.on("/", HTTP_GET, handleRoot);                   // Serve the HTML form at root
+  server.on("/api", HTTP_GET, handleAPI); 
   server.on("/deploy", HTTP_GET, handleDeployParachute);  // Handle form submission
   server.on("/launch", HTTP_GET, handleLaunch);           // Handle setting launch flag
   server.on("/arm", HTTP_GET, handleArmRocket);  // Handle arming the rocket
