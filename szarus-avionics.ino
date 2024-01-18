@@ -266,9 +266,9 @@ void loop() {
   dt = LoopTimer.elapsed();
   LoopTimer.start();
 
-  roll += (rotX * dt/1000)*180/3.14; // integrate X-axis rotation rate to get roll angle
-  pitch += (rotY * dt/1000)*180/3.14; // integrate Y-axis rotation rate to get pitch angle
-  yaw += (rotZ * dt/1000)*180/3.14; // integrate Z-axis rotation rate to get yaw angle
+  roll += (rotX * dt*1E-3)*180/3.14; // integrate X-axis rotation rate to get roll angle
+  pitch += (rotY * dt*1E-3)*180/3.14; // integrate Y-axis rotation rate to get pitch angle
+  yaw += (rotZ * dt*1E-3)*180/3.14; // integrate Z-axis rotation rate to get yaw angle
     buffer_accx.put(accX);
     gx = buffer_accx.average();
   if(prev_time!=time){
